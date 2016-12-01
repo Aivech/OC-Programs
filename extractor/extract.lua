@@ -35,13 +35,13 @@ print("Detecting power source")
 local engines = {}
 for addr, name in comp.list() do
   if string.match(name,"Engine") then
-    engines[#engines+1] = {comp.proxy(addr),name}
+	engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"[Tt]urbine") then
-    engines[#engines+1] = {comp.proxy(addr),name}
+	engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"Motor") then
-    engines[#engines+1] = {comp.proxy(addr),name}
+	engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"Magnetic") then
-    engines[#engines+1] = {comp.proxy(addr),name}
+	engines[#engines+1] = {comp.proxy(addr),name}
   end
 end
 
@@ -56,10 +56,10 @@ if comp.list("AdvancedGear") then
   control = comp.proxy(comp.list("AdvancedGear")())
   print("DEBUG: CVT found @ "..control.address)
   cLevel = 2
-elseif comp.list("redstone") then
-  control = comp.proxy(comp.list("redstone")())
-  print("DEBUG: RS I/O found @ "..control.address)
-  cLevel = 1
+--elseif comp.list("redstone") then
+  --control = comp.proxy(comp.list("redstone")())
+  --print("DEBUG: RS I/O found")
+  --cLevel = 1
 else
   print("No transmission control!")
 end
@@ -69,8 +69,9 @@ local hasECU = false
 for addr, name in comp.list("EngineControl") do
   ecu[#ecu+1]=comp.proxy(addr)
 end
+print(#ecu)
 
-if (#ecu ~= 0) and (#ecu ~= #engines) then
+if #ecu ~= 0 and #ecu ~= #engines do
   error("Number of ECU's must match number of engines!",0)
 end
 
