@@ -78,4 +78,3 @@ end
 if #ecu ~= 0 then
   hasECU = true
 end
-print("Has ECU: "..hasEcu)
