@@ -52,14 +52,14 @@ end
 print("Detecting control method")
 local control = {}
 local cLevel = 0
-if comp.list("AdvancedGear") then
+if comp.list("AdvancedGear")() then
   control = comp.proxy(comp.list("AdvancedGear")())
   print("DEBUG: CVT found @ "..control.address)
   cLevel = 2
---elseif comp.list("redstone") then
-  --control = comp.proxy(comp.list("redstone")())
-  --print("DEBUG: RS I/O found")
-  --cLevel = 1
+elseif comp.list("redstone")() then
+  control = comp.proxy(comp.list("redstone")())
+  print("DEBUG: RS I/O found")
+  cLevel = 1
 else
   print("No transmission control!")
 end
@@ -71,10 +71,12 @@ for addr, name in comp.list("EngineControl") do
 end
 print(#ecu)
 
-if #ecu ~= 0 and #ecu ~= #engines do
+if #ecu ~= 0 and #ecu ~= #engines then
   error("Number of ECU's must match number of engines!",0)
 end
 
 if #ecu ~= 0 then
   hasECU = true
 end
+print("Has ECU: "..hasEcu)
+
