@@ -71,7 +71,7 @@ for addr, name in comp.list("EngineControl") do
 end
 print(#ecu)
 
-if (#ecu ~= 0) and (#ecu ~= #engines) do
+if (#ecu ~= 0) and (#ecu ~= #engines) then
   error("Number of ECU's must match number of engines!",0)
 end
 
