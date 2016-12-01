@@ -69,7 +69,6 @@ local hasECU = false
 for addr, name in comp.list("EngineControl") do
   ecu[#ecu+1]=comp.proxy(addr)
 end
-print(#ecu)
 
 if (#ecu ~= 0) and (#ecu ~= #engines) then
   error("Number of ECU's must match number of engines!",0)
