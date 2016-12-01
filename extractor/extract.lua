@@ -35,13 +35,13 @@ print("Detecting power source")
 local engines = {}
 for addr, name in comp.list() do
   if string.match(name,"Engine") then
-	   engines[#engines+1] = {comp.proxy(addr),name}
+    engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"[Tt]urbine") then
-	   engines[#engines+1] = {comp.proxy(addr),name}
+    engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"Motor") then
-	   engines[#engines+1] = {comp.proxy(addr),name}
+    engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"Magnetic") then
-	   engines[#engines+1] = {comp.proxy(addr),name}
+    engines[#engines+1] = {comp.proxy(addr),name}
   end
 end
 
