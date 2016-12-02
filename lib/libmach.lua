@@ -28,7 +28,7 @@ local heigth = resHInit
 
 local libmach = {}
 
-function libmach.autoRes(...)
+function libmach.autoRes()
   local scrW, scrH = disp.getAspectRatio()
   local scrAR = scrW/scrH
   local resWMax, resHMax = gfx.maxResolution()
