@@ -1,10 +1,17 @@
 local comp = require("component")
 local side = require("sides")
-local color = require("colors")
- 
+local term = require("term")
+local mach = require("libmach")
+
+term.clear()
+print("Extractor Monitor v0.1")
+print("----------------------")
+
 print("Detecting Extractor")
 if not comp.list("Extractor")() then
-  error("No Extractor detected!",0)
+  mach.fatal("No Extractor detected!")
+  mach.cleanDisp()
+  os.exit()
 end
 local extrc = comp.proxy(comp.list("Extractor")())
  
@@ -34,31 +41,29 @@ print("Detecting power source")
  
 local engines = {}
 for addr, name in comp.list() do
-  if string.match(name,"Engine") then
-	engines[#engines+1] = {comp.proxy(addr),name}
+  if string.match(name,"Engine$") then
+    engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"[Tt]urbine") then
-	engines[#engines+1] = {comp.proxy(addr),name}
+    engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"Motor") then
-	engines[#engines+1] = {comp.proxy(addr),name}
+    engines[#engines+1] = {comp.proxy(addr),name}
   elseif string.match(name,"Magnetic") then
-	engines[#engines+1] = {comp.proxy(addr),name}
+    engines[#engines+1] = {comp.proxy(addr),name}
   end
 end
 
 if #engines == 0 then
-  error("No engines found!",0)
+  mach.fatal("No engines found!")
+  mach.cleanDisp()
+  os.exit()
 end
 
 print("Detecting control method")
 local control = {}
 local cLevel = 0
-if comp.list("AdvancedGear")() then
-  control = comp.proxy(comp.list("AdvancedGear")())
-  print("DEBUG: CVT found @ "..control.address)
-  cLevel = 2
-elseif comp.list("redstone")() then
+if comp.list("redstone")() then
   control = comp.proxy(comp.list("redstone")())
-  print("DEBUG: RS I/O found")
+  print("DEBUG: RS component found")
   cLevel = 1
 else
   print("No transmission control!")
@@ -72,11 +77,12 @@ end
 print(#ecu)
 
 if #ecu ~= 0 and #ecu ~= #engines then
-  error("Number of ECU's must match number of engines!",0)
+  mach.fatal("Number of ECU's must match number of engines!")
+  mach.cleanDisp
+  os.exit()
 end
 
 if #ecu ~= 0 then
   hasECU = true
 end
-print("Has ECU: "..hasEcu)
 
