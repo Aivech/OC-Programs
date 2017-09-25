@@ -117,66 +117,12 @@ if doGraphics then
   end
 end
 
-local mode = false --false for torque true for speed
+local mode = false          --false for torque true for speed
+local isProcessing = false  --false for idle, true for processing
+local powerSave = false     --true if idle more than ~1min
+local idleCycles = 0        --number of cycles we have been idle
+
 while running do
-  if doGraphics then --all the following code is pointless without a screen
-    if gfx.color then gfx.writeColored(39,1,rawget({extrc.readTank(0)},2).." mB",0x0049ff,0x000000)
-    else gfx.gpu.set(39,1,rawget({extrc.readTank(0)},2).." mB") end
-
-    local j = math.min(#engines,4)
-    for i=1,j do --very descriptive variable names
-      gfx.gpu.fill(20,12+i,32,1," ")
-
-      local engine = engines[i]
-      local power = engine.proxy.getPower()
-      engine.message = "OK"
-      engine.status = 0
-      
-      --parse engine power
-      if power > 1000000000 then
-        gfx.gpu.set(20,12+i,math.floor(power/1000000000).." GW")
-      elseif power > 1000000 then 
-        gfx.gpu.set(20,12+i,math.floor(power/1000000).." MW")
-      else
-        gfx.gpu.set(20,12+i,math.floor(power/1000).." kW")
-      end
-
-      if engine.fuel then
-        local fuelData = rawget({engine.proxy.readTank(1)},2)
-        gfx.gpu.set(28,12+i,fuelData.." mB")
-        if fuelData < 5000 then engine.message = "Low Fuel"; engine.status = 2 end
-      end
-      --if engine.addt then
-        --reika pls fix getNBTTag() kthxbye
-      --end
-      if engine.coolant then
-        local coolantData = rawget({engine.proxy.readTank(0)},2)
-        if coolantData < 1000 then engine.message = "Low Coolant"; engine.status = 2 end
-      end
-      --if engine.temp then
-        --also needs fix getNBTTag()
-      --end
-      if engine.output then
-        if power < powerTable[engine.name] and engine.status < 2 then engine.message = "Low Power"; engine.status = 1 end
-      end
-      
-      if gfx.color then
-        local fgcolor = 0x00ff00
-        local bgcolor = 0x000000
-        
-        if engine.status == 1 then fgcolor = 0xff6d00 
-        elseif engine.status == 2 then fgcolor = 0x000000; bgcolor = 0xff0000 end
-        
-        gfx.writeColored(39,12+i,engine.message,fgcolor,bgcolor)
-      else
-        gfx.gpu.set(39,12+i,string.upper(engine.message))
-      end
-    end
-  end
-  
-  --ok let's get to the actually useful part
-
-  local isProcessing = false
   local items = {}
   local counts = {}
   for i=0,7 do
@@ -184,6 +130,21 @@ while running do
     if slot[4] then items[i+1] = slot[4] else items[i+1] = "" end
     if slot[3] then counts[i+1] = slot[3] else counts[i+1] = 0 end
     if i ~= 7 and counts[i+1] > 0 then isProcessing = true end
+  end
+  
+  if (extrc.getPower()) < 65536 then isProcessing = false end
+  
+  if not isProcessing then idleCycles = idleCycles+1 end
+  
+  if idleCycles > 6 and not powerSave then
+    screen = cp.proxy(gfx.gpu.getScreen())
+    screen.turnOff()
+    powerSave = true
+  end
+  if powerSave and isProcessing then 
+    screen = cp.proxy(gfx.gpu.getScreen())
+    screen.turnOn()
+    powerSave = false
   end
 
   if canControl and isProcessing then
@@ -219,7 +180,64 @@ while running do
     end
   end
   
-  if doGraphics then 
+  if doGraphics and not powerSave then --all the following code is pointless without a screen
+    if gfx.color then gfx.writeColored(39,1,rawget({extrc.readTank(0)},2).." mB",0x0049ff,0x000000)
+    else gfx.gpu.set(39,1,rawget({extrc.readTank(0)},2).." mB") end
+
+    local numEngines = math.min(#engines,4)
+    for i=1,numEngines do
+      gfx.gpu.fill(20,12+i,32,1," ") --clear the output
+
+      local engine = engines[i]             --get that specific engine
+      local power = engine.proxy.getPower() --get the engine's power output
+      engine.message = "OK"                 --default message
+      engine.status = 0                     --Effectively a format code for the message status.
+      
+      --I should probably be using string.format and exponents here.
+      if power > 1000000000 then
+        gfx.gpu.set(20,12+i,math.floor(power/1000000000).." GW")
+      elseif power > 1000000 then 
+        gfx.gpu.set(20,12+i,math.floor(power/1000000).." MW")
+      else
+        gfx.gpu.set(20,12+i,math.floor(power/1000).." kW")
+      end
+
+      --check each conditional for "what is monitored"
+      
+      if engine.fuel then
+        local fuelData = rawget({engine.proxy.readTank(1)},2)
+        gfx.gpu.set(28,12+i,fuelData.." mB")
+        if fuelData < 5000 then engine.message = "Low Fuel"; engine.status = 2 end
+      end
+      --if engine.addt then
+        --reika pls fix getNBTTag() kthxbye
+      --end
+      if engine.coolant then
+        local coolantData = rawget({engine.proxy.readTank(0)},2)
+        if coolantData < 1000 then engine.message = "Low Coolant"; engine.status = 2 end
+      end
+      --if engine.temp then
+        --also needs fix getNBTTag()
+      --end
+      if engine.output then
+        if power < powerTable[engine.name] and engine.status < 2 then engine.message = "Low Power"; engine.status = 1 end
+      end
+      
+      if gfx.color then --color handling should really just be native to the graphics library
+        local fgcolor = 0x00ff00
+        local bgcolor = 0x000000
+        
+        if engine.status == 1 then fgcolor = 0xff6d00 
+        elseif engine.status == 2 then fgcolor = 0xFFFFFF; bgcolor = 0xff0000 end
+        
+        gfx.writeColored(39,12+i,engine.message,fgcolor,bgcolor)
+      else
+        gfx.gpu.set(39,12+i,string.upper(engine.message))
+      end
+    end
+  end
+  
+  if doGraphics and not powerSave then 
     if gfx.color then 
       if isProcessing then gfx.writeColored(1,1,"Processing",0x00ff00,0x000000)
       else gfx.gpu.fill(1,1,26,1," "); gfx.writeColored(1,1,"Idle",0xff0000,0x000000) end
@@ -231,6 +249,10 @@ while running do
     for i,name in ipairs(items) do gfx.gpu.set(1,1+i,name) end
   end
   
-  os.sleep(1)
+  local sleepTime = 1
+  
+  if not isProcessing then sleepTime = 10 end
+    
+  os.sleep(sleepTime)
 end
 gfx.reset()
