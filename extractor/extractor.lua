@@ -135,6 +135,7 @@ while running do
   if (extrc.getPower()) < 65536 then isProcessing = false end
   
   if not isProcessing then idleCycles = idleCycles+1 end
+  if isProcessing and idleCycles > 0 then idleCycles = 0 end
   
   if idleCycles > 6 and not powerSave then
     screen = cp.proxy(gfx.gpu.getScreen())
@@ -153,7 +154,7 @@ while running do
     if not mode then
       if counts[4] == 0 or counts[8] > 62 then change2 = true end
       if counts[1] == 0 or counts[5] > 62 then change1 = true end
-      if counts[2] < 64 and counts[5] > 2 then change1 = true end
+      if counts[1] ~= 0 and string.sub(items[1],1,4) ~= string.sub(items[5],1,4) then change1 = true end
       if counts[1] == 0 and counts[4] == 0 then mode = true end
       if change1 and change2 then mode = true end
       if mode then --lazy me
@@ -166,8 +167,8 @@ while running do
     else
       if counts[2] == 0 or counts[6] > 62 then change1 = true end
       if counts[3] == 0 or counts[7] > 62 then change2 = true end
-      if counts[3] < 64 and counts[6] > 2 then change1 = true end
-      if counts[7] > 2 and counts[4] < 64 then change2 = true end
+      if counts[2] ~= 0 and string.sub(items[2],1,4) ~= string.sub(items[6],1,4) then change1 = true end
+      if counts[3] ~= 0 and string.sub(items[3],1,4) ~= string.sub(items[7],1,4) then change2 = true end
       if counts[2] == 0 and counts[3] == 0 then mode = false end
       if change1 and change2 then mode = false end
       if not mode then --lazy me
@@ -235,20 +236,17 @@ while running do
         gfx.gpu.set(39,12+i,string.upper(engine.message))
       end
     end
-  end
-  
-  if doGraphics and not powerSave then 
+    
     if gfx.color then 
       if isProcessing then gfx.writeColored(1,1,"Processing",0x00ff00,0x000000)
-      else gfx.gpu.fill(1,1,26,1," "); gfx.writeColored(1,1,"Idle",0xff0000,0x000000) end
+      else gfx.gpu.fill(1,1,27,1," "); gfx.writeColored(1,1,"Idle",0xff0000,0x000000) end
     else
       if isProcessing then gfx.set(1,1,"Processing")
-      else gfx.gpu.fill(1,1,26,1," "); gfx.set(1,1,"Idle") end
+      else gfx.gpu.fill(1,1,27,1," "); gfx.set(1,1,"Idle") end
     end
     gfx.gpu.fill(1,2,52,8," ")
     for i,name in ipairs(items) do gfx.gpu.set(1,1+i,name) end
   end
-  
   local sleepTime = 1
   
   if not isProcessing then sleepTime = 10 end
