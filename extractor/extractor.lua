@@ -100,10 +100,8 @@ if not doGraphics and not canControl then
   error("What exactly are you trying to accomplish here?")
 end
 
-local gpu;
 if doGraphics then
   term.clear()
-  gpu = cp.getPrimary("gpu")
   gfx.autoRes(50,16)
   gfx.gpu.set(30,1,"Water: ")
   gfx.gpu.set(1,12,"Engine")
@@ -154,8 +152,7 @@ while running do
     if not mode then
       if counts[4] == 0 or counts[8] > 62 then change2 = true end
       if counts[1] == 0 or counts[5] > 62 then change1 = true end
-      if counts[1] ~= 0 and string.sub(items[1],1,4) ~= string.sub(items[5],1,4) then change1 = true end
-      if counts[1] == 0 and counts[4] == 0 then mode = true end
+      if counts[1] ~= 0 and counts[5] ~= 0 and string.sub(items[1],1,4) ~= string.sub(items[5],1,4) then change1 = true end
       if change1 and change2 then mode = true end
       if mode then --lazy me
         rs.setOutput(sides.north,15)
@@ -167,9 +164,8 @@ while running do
     else
       if counts[2] == 0 or counts[6] > 62 then change1 = true end
       if counts[3] == 0 or counts[7] > 62 then change2 = true end
-      if counts[2] ~= 0 and string.sub(items[2],1,4) ~= string.sub(items[6],1,4) then change1 = true end
-      if counts[3] ~= 0 and string.sub(items[3],1,4) ~= string.sub(items[7],1,4) then change2 = true end
-      if counts[2] == 0 and counts[3] == 0 then mode = false end
+      if counts[2] ~= 0 and counts[6] ~= 0 and string.sub(items[2],1,4) ~= string.sub(items[6],1,4) then change1 = true end
+      if counts[3] ~= 0 and counts[7] ~= 0 and string.sub(items[3],1,4) ~= string.sub(items[7],1,4) then change2 = true end
       if change1 and change2 then mode = false end
       if not mode then --lazy me
         rs.setOutput(sides.north,0)
