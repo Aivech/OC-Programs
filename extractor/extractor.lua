@@ -207,14 +207,15 @@ while running do
         if fuelData < 5000 then engine.message = "Low Fuel"; engine.status = 2 end
       end
       --if engine.addt then
-        --reika pls fix getNBTTag() kthxbye
+        --reika pls fix getNBTTag() or sth so i can read this
+        --although in all honesty it might be fixed but i'm too lazy to find out
       --end
       if engine.coolant then
         local coolantData = rawget({engine.proxy.readTank(0)},2)
         if coolantData < 1000 then engine.message = "Low Coolant"; engine.status = 2 end
       end
       --if engine.temp then
-        --also needs fix getNBTTag()
+        --fix eventually but am lazy also meh
       --end
       if engine.output then
         if power < powerTable[engine.name] and engine.status < 2 then engine.message = "Low Power"; engine.status = 1 end
